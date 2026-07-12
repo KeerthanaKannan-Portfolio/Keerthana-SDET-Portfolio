@@ -1,6 +1,7 @@
 const {test,expect} = require('@playwright/test');
 
 test ('END TO END UI TESTING',async({page})=>
+
     {
 const userEmail=page.getByPlaceholder("email@example.com");
 const userPassword =page.getByPlaceholder("enter your passsword");
@@ -64,3 +65,20 @@ await expect(page.getByText(orderID)).toBeVisible();
 await console.log("OrderIdInViewPage : "+orderID);
     }
 );
+
+test.only('Handling Calenders',async({page})=>
+{
+    const month="july";
+    const date=10;
+    const year =2023;  
+    const ExpectedDate="2023-07-10";
+  await page.goto("https://rahulshettyacademy.com/seleniumPractise/#/offers");
+  await page.locator(".react-date-picker__inputGroup").click();
+    await page.locator(".react-calendar__navigation__label").click();
+     await page.locator(".react-calendar__navigation__label").click();
+     await page.getByRole("button",{name: year}).click();
+      await page.getByRole("button",{name: month}).click();
+       await page.locator("//abbr[text()='"+date+"']").click();
+        expect(await page.locator("[name='date']").inputValue()).toEqual(ExpectedDate);
+ 
+})
