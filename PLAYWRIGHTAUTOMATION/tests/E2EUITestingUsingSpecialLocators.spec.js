@@ -5,7 +5,6 @@ test ('END TO END UI TESTING',async({page})=>
 const userEmail=page.getByPlaceholder("email@example.com");
 const userPassword =page.getByPlaceholder("enter your passsword");
 const login =page.getByText("Login");
-const addToCartButton=page.locator("[routerlink='/dashboard/cart']");
 const productName="ZARA COAT 3";
 const expectedConfirmationMessage=" Thankyou for the order. ";
 const checkoutButton=page.getByRole("button",{name:'Checkout'});
@@ -26,7 +25,7 @@ const applyCoupon = page
     .locator('div.field.small')
     .filter({ hasText: 'Apply Coupon '})
     .locator('input');
-const placeorderButton=page.locator(".btnn.action__submit");
+const placeorderButton=await page.getByText("PLACE ORDER");
 const orderConfirmationTag=page.locator(".hero-primary");
 const ordersButton=page.getByRole("button",{name:'  ORDERS'});
 
@@ -35,66 +34,33 @@ await userEmail.fill("keerthanakannan872@gmail.com");
 await userPassword.fill("3bYr5ZpMK@wT7@t");
 await login.click();
 await page.waitForLoadState("networkidle");
-//await page.locator(".card-body b").first().waitFor();
-const elements=await page.locator(".card-body");
+await page.locator(".card-body").filter({hasText:'ZARA COAT 3'}).getByRole("button",{name:'Add To Cart'}).click();
+await page.getByRole("listitem").getByRole('button',{name:"Cart"}).click();
 
-
-for(let i=0;i< await elements.count();i++)
-{
-    const prdName=await elements.nth(i).locator("b").textContent();
-    if(productName===prdName)
-    {
-     await elements.nth(i).locator("text= Add To Cart").click();
-     break;
-    }
-}
-await addToCartButton.click();
 await page.waitForLoadState("networkidle");
-await page.locator(".cart").waitFor();
+await page.locator("div li").first().waitFor();
 await expect(addedElement).toBeVisible();
 await checkoutButton.click();
 await cvvInput.fill("123");
 await nameOnTheCard.fill("Keerthana");
 await applyCoupon.fill("ELSUOU");
-//await couponButton.click();
-expect(await page.locator(".user__name.mt-5 label")).toHaveText("keerthanakannan872@gmail.com");
-await selectCountry.pressSequentially("India");
+expect(await page.getByText("keerthanakannan872@gmail.com")).toBeVisible();
+  await page.getByPlaceholder("Select Country").pressSequentially("ind");
+ 
+   await page.getByRole("button",{name :"India"}).nth(1).click();
+   await page.getByText("PLACE ORDER").click();
 
-const dropDownOptions = page.locator(".ta-results.list-group.ng-star-inserted");
-await dropDownOptions.waitFor();
+await expect(page.getByText(expectedConfirmationMessage)).toBeVisible();
 
-for(let i=0;i<await dropDownOptions.locator("button").count();i++)
-{
- const options=await dropDownOptions.locator("button").nth(i).textContent();
-    if(options===" India")
-    {
-     await dropDownOptions.locator("button").nth(i).click();
-     break;
-    }
-}
-await placeorderButton.click();
-await expect(orderConfirmationTag).toHaveText(expectedConfirmationMessage);
-
-const id=await orderIdTag.textContent();
-const orderID=await id.split("|")[1].trim();
+const text = await orderIdTag.textContent();
+const orderID = text.split("|")[1].trim();
 await console.log("ORDERID:",orderID);
-await ordersButton.first().click();
+await ordersButton.click();
 
-const rows = page.locator("tbody tr");
-await rows.first().waitFor();
-const rowCount = await rows.count();
+await page.locator("tbody tr").first().waitFor();
+await page.locator("tbody tr").filter({hasText:orderID}).getByRole("button",{name:"View"}).click();
 
-for(let i=0;i<rowCount;i++)
-{
-     if(await rows.nth(i).locator("th").textContent()===orderID);
-     {
-        await rows.nth(i).getByRole("button",{name:"View"}).click();
-        break;
-     }
-}
-const orderIdInViewPageTag =page.locator(".col-text.-main");
-const orderIdInViewPage=await orderIdInViewPageTag.textContent();
-await expect(orderIdInViewPage).toEqual(orderID);
-await console.log("OrderIdInViewPage : "+orderIdInViewPage);
+await expect(page.getByText(orderID)).toBeVisible();
+await console.log("OrderIdInViewPage : "+orderID);
     }
 );
