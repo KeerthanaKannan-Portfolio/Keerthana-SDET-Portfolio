@@ -2,33 +2,33 @@ const {test,expect} = require('@playwright/test');
 
 test ('END TO END UI TESTING',async({page})=>
     {
-const userEmail=page.locator("#userEmail")
-const userPassword =page.locator("#userPassword");
-const login =page.locator("#login");
+const userEmail=page.getByPlaceholder("email@example.com");
+const userPassword =page.getByPlaceholder("enter your passsword");
+const login =page.getByText("Login");
 const addToCartButton=page.locator("[routerlink='/dashboard/cart']");
 const productName="ZARA COAT 3";
 const expectedConfirmationMessage=" Thankyou for the order. ";
-const checkoutButton=page.locator("text=Checkout");
-const addedElement=page.locator("h3:has-text('ZARA COAT 3')")
+const checkoutButton=page.getByRole("button",{name:'Checkout'});
+const addedElement=page.getByText("ZARA COAT 3");
 const site="https://rahulshettyacademy.com/client/#/auth/login";
-const couponButton =page.locator("[type='submit']");
-const selectCountry=page.locator("[placeholder='Select Country']");
+const couponButton =page.getByRole("button",{name:'Apply Coupon'});
+const selectCountry=page.getByPlaceholder("Select Country");
 const orderIdTag=page.locator(".em-spacer-1 .ng-star-inserted");
 const cvvInput = page
     .locator('div.field.small')
-    .filter({ hasText: 'CVV Code' })
+    .filter({ hasText: 'CVV Code'})
     .locator('input');
 const nameOnTheCard = page
     .locator('div.field')
-    .filter({ hasText: 'Name on Card ' })
+    .filter({ hasText: 'Name on Card '})
     .locator('input');
 const applyCoupon = page
     .locator('div.field.small')
-    .filter({ hasText: 'Apply Coupon ' })
+    .filter({ hasText: 'Apply Coupon '})
     .locator('input');
 const placeorderButton=page.locator(".btnn.action__submit");
 const orderConfirmationTag=page.locator(".hero-primary");
-const ordersButton=page.locator("[routerlink='/dashboard/myorders']");
+const ordersButton=page.getByRole("button",{name:'  ORDERS'});
 
 await page.goto(site);
 await userEmail.fill("keerthanakannan872@gmail.com");
@@ -37,6 +37,7 @@ await login.click();
 await page.waitForLoadState("networkidle");
 //await page.locator(".card-body b").first().waitFor();
 const elements=await page.locator(".card-body");
+
 
 for(let i=0;i< await elements.count();i++)
 {
@@ -87,7 +88,7 @@ for(let i=0;i<rowCount;i++)
 {
      if(await rows.nth(i).locator("th").textContent()===orderID);
      {
-        await rows.nth(i).locator(".btn.btn-primary").click();
+        await rows.nth(i).getByRole("button",{name:"View"}).click();
         break;
      }
 }

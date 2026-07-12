@@ -142,4 +142,31 @@ await userName.fill(domainName);
 //await page.pause();
 })
 
+test.only("Playwright special locators",async ({page})=>
+{
+  const nameTag=page.locator("[name='name']");
+  const emailTag=page.locator("[name='email']");
+  const name="Keerthana";
+  const eamil="keerthana123@gmail.com";
+  const password="12nefhe";
+  const URL="https://rahulshettyacademy.com/angularpractice/";
+  const labelCheckBox="Check me out if you Love IceCreams!";
+  const labelRadioButton="Employed";
+  const genderLabel="Gender";
+  const successMessageText=page.getByText("Success!");
+  await page.goto(URL);
+  await nameTag.first().fill(name);
+  await emailTag.fill("");
+  await emailTag.fill(eamil);
+  await page.getByPlaceholder("Password").fill(password);
+  await page.getByLabel(genderLabel).selectOption("Female");
+  await page.getByLabel(labelCheckBox).check();
+  await page.getByLabel(labelRadioButton).check();
+  await page.getByRole("button",{name:'Submit'}).click();
+  await expect(successMessageText).toBeVisible();
+  await page.getByRole("link",{name:'shop'}).click();
+  await page.locator("app-card").filter({hasText:'Nokia Edge'}).getByRole("button").click();
+   await page.pause();
+}
+)
 ;
