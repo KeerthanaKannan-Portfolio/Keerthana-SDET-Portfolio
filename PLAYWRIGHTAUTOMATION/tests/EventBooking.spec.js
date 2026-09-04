@@ -55,13 +55,13 @@ async function createEvent(page)
     await venue.fill("No:48,Cafe yolove Anna Nagar Chennai");
     await dateTime.fill(await futureDateValue());
     await price.fill("2000");
-    await seats.fill("2");
+    await seats.fill("5");
     await addEventBtn.click();
     await expect(page.getByText("Event created!")).toBeVisible();
     return titleName;
 
 }
-async function bookEvent(page,titleName)
+async function bookEvent(page,titleName,noOfTickets)
 {
    const eventPath=page.locator("#nav-events");
    const fullName=page.getByLabel("Full Name");
@@ -82,7 +82,11 @@ async function bookEvent(page,titleName)
   await fullName.fill(name);
   await email.fill(process.env.TEST_EMAIL);
   await phoneNumberTag.fill(phoneNumber);
-  await ticketsTag.click();
+  for(let i=0;i<noOfTickets-1;i++)
+  {
+    await ticketsTag.click();
+  }
+ 
   await confirmBookingButton.click();
   await expect(bookingRefTag).toBeVisible();
   const noOfTicketsBooked=await page.locator(".font-medium.text-gray-900").nth(2).textContent();
@@ -103,6 +107,21 @@ async function myBookings(page,bookingref,titleName)
      await expect(allBookings.first()).toBeVisible();
      await expect(allBookings.locator("#booking-card").filter({hasText:bookingref})).toBeVisible();
      await expect(allBookings.locator("#booking-card").filter({hasText:titleName})).toBeVisible();
+}
+async function refundEligibilityValidation(page,titleName,TicketsBooked)
+{
+     const allBookings=page.locator(".space-y-4.mb-8");
+    const eligibilityRefundLink = page.locator("#check-refund-btn"); 
+  await allBookings.locator("#booking-card").filter({hasText:titleName}).getByRole("button",{name:"View Details"}).click();
+  await eligibilityRefundLink.click();
+  if(TicketsBooked===1)
+  {
+   await expect(page.locator("#refund-result span")).toHaveText("Eligible for refund. Single-ticket bookings qualify for a full refund.");
+  }
+  else if (TicketsBooked>1){
+   await expect(page.locator("#refund-result span")).toHaveText("Not eligible for refund. Group bookings ("+TicketsBooked+" tickets) are non-refundable.");
+  }
+  
 }
 async function validateSeatReduction(page, titleName, seatsBeforeBooking,TicketsBooked) {
  
@@ -134,8 +153,28 @@ test("Event Booking Validation",async ({page})=>
 {  
   await login(page);
   const titleName = await createEvent(page);
-  const { bookingRef, seatsBeforeBooking ,TicketsBooked} =await bookEvent(page, titleName);
+  const noOfTickets=1;
+  const { bookingRef, seatsBeforeBooking ,TicketsBooked} =await bookEvent(page, titleName,noOfTickets);
   await myBookings(page,bookingRef,titleName);
   await validateSeatReduction(page,titleName,seatsBeforeBooking,TicketsBooked)
 
+})
+
+test("Single ticket booking is eligible for refund-Validation ",async ({page})=>
+{  
+  await login(page);
+  const titleName = await createEvent(page);
+  const noOfTickets=1;
+  const {bookingRef, seatsBeforeBooking ,TicketsBooked} =await bookEvent(page, titleName,noOfTickets);
+  await myBookings(page,bookingRef,titleName);
+  await refundEligibilityValidation(page,titleName,TicketsBooked);
+})
+test("Multiple ticket booking is not eligible for refund-Validation ",async ({page})=>
+{  
+  await login(page);
+  const titleName = await createEvent(page);
+  const noOfTickets=2;
+  const {bookingRef, seatsBeforeBooking ,TicketsBooked} =await bookEvent(page, titleName,noOfTickets);
+  await myBookings(page,bookingRef,titleName);
+  await refundEligibilityValidation(page,titleName,TicketsBooked);
 })
